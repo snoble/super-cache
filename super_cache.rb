@@ -116,7 +116,7 @@ class Loader
 
   def w(x)
     call_array = caller(0)
-    @outputs << {:caller => call_array[-4], :output => x._value}
+    @outputs << {:caller => call_array[-5], :output => x._value}
   end
 end
 
@@ -130,21 +130,35 @@ end
 def wrap(x)
   SuperCache.new(_cache, x)
 end
-
-last_modified = File.mtime('./foo.rb')
-
-begin
-  puts @loader.l('./foo.rb').to_s
-rescue
-end
-while true
-  if File.mtime('./foo.rb') > last_modified
-    last_modified = File.mtime('./foo.rb')
-    begin
-      puts @loader.l('./foo.rb').to_s
-    rescue
-
-    end
+class BlockCaller
+  def to_s
+    "block_caller"
   end
+  def run(&blk)
+    blk.call
+  end
+end
+
+def construct(&blk)
+  SuperCache.new(_cache, BlockCaller.new, :run, [], blk)
+end
+
+def run_and_update
+  @last_modified = File.mtime('./foo.rb')
+
+  begin
+    puts @last_modified
+    puts @loader.l('./foo.rb').to_s
+  rescue Exception => e
+    puts e
+  end
+end
+
+run_and_update
+while true
+  if File.mtime('./foo.rb') > @last_modified
+    run_and_update
+  end
+  sleep 1
 end
 

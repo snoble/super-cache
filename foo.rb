@@ -17,7 +17,14 @@ y = x.map do |n|
   n + 3
 end
 
-w y.map {|n| n*2}
+y.map {|n| n*2}
+
+z = construct do
+  sleep 3
+  23
+end
+
+w z + 4
 
 # extra line
 # last line
